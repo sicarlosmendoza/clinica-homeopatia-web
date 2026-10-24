@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------------------
+// 1. MODELO DE USUARIOS (MÉDICOS/ADMINISTRADORES)
+// ------------------------------------------------------------------
+model Usuario {
+  id            String    @id @default(uuid()) @db.Uuid
+  nombre        String?   @db.VarChar(255)
+  email         String    @unique @db.VarChar(255)
+  emailVerified DateTime? @db.Timestamp()
+  image         String?   @db.Text
+  rol           String    @default("USER") @db.VarChar(50)
+  activo        Boolean   @default(true)
+  createdAt     DateTime  @default(now()) @db.Timestamp()
+  updatedAt     DateTime  @updatedAt @db.Timestamp()
+
+  @@map("usuarios")
+}
+
+// ------------------------------------------------------------------
+// 2. MODELO DE PACIENTES (DATOS GENERALES)
+// ------------------------------------------------------------------
+model Paciente {
+  id                 String   @id @default(uuid()) @db.Uuid
+  folio              String   @unique @db.VarChar(20)
+  nombre_completo    String   @db.VarChar(255)
+  fecha_nacimiento   DateTime @db.Date
+  sexo               String   @db.VarChar(20)
+  foto               String?  @db.Text
+  genero             String?  @db.VarChar(50)
+  escolaridad        String?  @db.VarChar(100)
+  ocupacion          String?  @db.VarChar(150)
+  estado_civil       String?  @db.VarChar(50)
+  telefono           String?  @db.VarChar(20)
+  correo_electronico String?  @db.VarChar(100)
+  fecha_registro     DateTime @default(now()) @db.Timestamp()
+
+  // RELACIONES (Un paciente tiene 1 historia, MUCHAS consultas y MUCHOS archivos)
+  historia_clinica   HistoriaClinica?
+  consultas          Consulta[]
+  archivos           ArchivoAdjunto[]
+
+  @@map("pacientes")
+}
+
+// ------------------------------------------------------------------
+// 3. MODELO: HISTORIA CLÍNICA (Apertura - 1 por paciente)
+// ------------------------------------------------------------------
+model HistoriaClinica {
+  id                 String   @id @default(uuid()) @db.Uuid
+  paciente_id        String   @unique @db.Uuid
+  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+
+  // Antecedentes Universales
+  ahf                String?  @db.Text // Antecedentes Heredofamiliares
+  apnp               String?  @db.Text // Antecedentes Personales No Patológicos
+  app                String?  @db.Text // Antecedentes Personales Patológicos
+  diagnostico_psiquiatrico String?  @db.Text // NUEVO
+  enfermedades_venereas    String?  @db.Text // NUEVO
+
+  // Antecedentes Gineco-obstétricos (Mujeres)
+  menarca            Int?     // Edad de inicio (ej. 12)
+  ritmo_menstrual    String?  @db.VarChar(100) // ej. 28x5
+  fum                DateTime? @db.Date // Fecha de última menstruación
+  gestas             Int?     @default(0)
+  partos             Int?     @default(0)
+  cesareas           Int?     @default(0)
+  abortos            Int?     @default(0)
+  metodo_anticonceptivo String? @db.VarChar(150)
+
+  // Antecedentes Pediátricos / Perinatales
+  tipo_nacimiento    String?  @db.VarChar(100) // Eutócico, Cesárea
+  apgar              String?  @db.VarChar(50)
+  peso_nacer         Decimal? @db.Decimal(5, 2) // en kg
+  talla_nacer        Decimal? @db.Decimal(5, 2) // en cm
+  lactancia          String?  @db.VarChar(150)
+  desarrollo_psicomotor String? @db.Text
+  vacunas            String?  @db.Text
+
+  fecha_actualizacion DateTime @updatedAt @db.Timestamp()
+
+  @@map("historias_clinicas")
+}
+
+// ------------------------------------------------------------------
+// 4. MODELO: CONSULTAS (El día a día - N por paciente)
+// ------------------------------------------------------------------
+model Consulta {
+  id                 String   @id @default(uuid()) @db.Uuid
+  paciente_id        String   @db.Uuid
+  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+
+  fecha_consulta     DateTime @default(now()) @db.Timestamp()
+  motivo_consulta    String   @db.Text
+
+  // Signos Vitales y Somatometría
+  peso               Decimal? @db.Decimal(5, 2) // kg
+  talla              Decimal? @db.Decimal(5, 2) // cm o m
+  presion_arterial   String?  @db.VarChar(20)   // ej. 120/80
+  frecuencia_cardiaca Int?
+  frecuencia_respiratoria Int?
+  temperatura        Decimal? @db.Decimal(4, 2) // ej. 36.5
+
+  // Interrogatorio Homeopático
+  modalidades        String?  @db.Text // Agravaciones y mejorías
+  lateralidad        String?  @db.VarChar(100) // Izquierda, Derecha, Cruzada
+  deseos_aversiones  String?  @db.Text // Alimenticios
+  sensibilidad_termica String? @db.VarChar(100) // Caluroso, Friolento
+  sed                String?  @db.Text // Mucha, Poca, Agua fría, etc.
+  sintomas_mentales  String?  @db.Text // Miedos, ansiedad, llanto
+
+  // Resolución y Receta
+  diagnostico_clinico String? @db.Text
+  remedio_homeopatico String? @db.VarChar(255) // ej. Nux Vomica
+  potencia_dosis      String? @db.VarChar(255) // ej. 30 CH, 10 gotas c/8h
+  indicaciones        String? @db.Text
+
+  @@map("consultas")
+}
+
+// ------------------------------------------------------------------
+// 5. MODELO: ARCHIVOS ADJUNTOS (Fotos y Docs - N por paciente)
+// ------------------------------------------------------------------
+model ArchivoAdjunto {
+  id                 String   @id @default(uuid()) @db.Uuid
+  paciente_id        String   @db.Uuid
+  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+
+  url_archivo        String   @db.Text  // Aquí vivirá el enlace a la foto en la nube
+  tipo_archivo       String?  @db.VarChar(50) // 'imagen', 'pdf'
+  descripcion        String?  @db.Text // "Foto de la alergia", "Estudios de sangre"
+  fecha_subida       DateTime @default(now()) @db.Timestamp()
+
+  @@map("archivos_adjuntos")
+}

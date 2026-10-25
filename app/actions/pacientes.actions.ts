@@ -81,6 +81,9 @@ export async function obtenerPacientePorId(id: string) {
   try {
     return await prisma.paciente.findUnique({
       where: { id },
+      include: {
+        historia_clinica: true,
+      },
     });
   } catch (error) {
     console.error("Error al obtener paciente:", error);

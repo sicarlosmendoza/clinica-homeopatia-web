@@ -9,17 +9,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/");
   }
 
-  const primerNombre = session?.user?.name?.split(' ')[0] || "Usuario";
+  const primerNombre = session?.user?.name?.split(" ")[0] || "Usuario";
 
   return (
     <div className="min-h-screen bg-slate-50/60">
       
-      {/* BARRA SUPERIOR: Fondo blanco, borde inferior lila suave y línea decorativa azul superior */}
+      {/* BARRA DE NAVEGACIÓN SUPERIOR */}
       <header className="bg-white/90 backdrop-blur-md border-b border-purple-100 border-t-4 border-t-sky-500 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             
-            {/* LOGO HOMEOSYS EN VIOLETA Y ROSA */}
+            {/* Logo HomeoSys */}
             <div className="flex items-center gap-8">
               <Link href="/pacientes" className="flex items-center gap-2 group">
                 <span className="text-2xl transition-transform group-hover:scale-110">🔮</span>
@@ -50,7 +50,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
               </nav>
             </div>
 
-            {/* ZONA DE USUARIO */}
+            {/* Datos de usuario y Salir */}
             <div className="flex items-center gap-4">
               <span className="text-xs font-semibold px-2.5 py-1 bg-pink-50 text-pink-700 border border-pink-200 rounded-full">
                 ✨ Dra. {primerNombre}

@@ -131,10 +131,19 @@ export async function obtenerExpedientePaciente(id: string) {
       where: { id },
       include: {
         historia_clinica: true,
+        consultas: {
+          orderBy: { fecha_consulta: "desc" },
+        },
+        archivos: {
+          orderBy: { creado_en: "desc" },
+        },
         _count: {
-          select: { consultas: true, archivos: true }
-        }
-      }
+          select: {
+            consultas: true,
+            archivos: true,
+          },
+        },
+      },
     });
   } catch (error) {
     console.error("Error al obtener expediente:", error);

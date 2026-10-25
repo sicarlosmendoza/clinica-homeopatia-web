@@ -1,8 +1,9 @@
-import CapturaFotoModal from "@/components/ui/CapturaFotoModal";
-import { obtenerExpedientePaciente } from "../../actions/pacientes.actions";
+import { obtenerExpedientePaciente } from "@/app/actions/pacientes.actions";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import CapturaFotoModal from "@/components/ui/CapturaFotoModal";
+import ExpedienteTabs from "@/components/ui/ExpedienteTabs";
 
 export const instant = false;
 
@@ -55,7 +56,7 @@ export default async function ExpedienteLayout({
 
   return (
     <div className="space-y-4">
-      {/* BOTÓN REGRESAR */}
+      {/* Botón regresar */}
       <div>
         <Link href="/pacientes">
           <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-900 hover:bg-violet-50 -ml-2">
@@ -65,13 +66,10 @@ export default async function ExpedienteLayout({
       </div>
 
       <div className="space-y-6">
-        {/* CABECERA: Borde superior azul, fondo con tinte lila y avatar morado/rosa */}
+        {/* Cabecera del Paciente (Sin botón de editar datos) */}
         <div className="bg-white rounded-2xl border border-purple-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
-          {/* Línea decorativa superior azul */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-indigo-500 to-pink-500" />
           
-          {/* Avatar con degradado lila-rosa */}
-          {/* Avatar con captura de Webcam */}
           <CapturaFotoModal
             pacienteId={paciente.id}
             fotoActual={paciente.foto}
@@ -89,12 +87,6 @@ export default async function ExpedienteLayout({
               <span className="bg-pink-100 text-pink-700 border border-pink-200 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                 {etapa}
               </span>
-              
-              <Link href={`/pacientes/${paciente.id}/editar`}>
-                <Button variant="outline" size="sm" className="h-7 text-xs border-purple-200 text-purple-700 hover:bg-purple-50 hover:text-purple-800">
-                  ✏️ Editar Datos
-                </Button>
-              </Link>
             </div>
             
             <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-slate-600">
@@ -105,33 +97,12 @@ export default async function ExpedienteLayout({
           </div>
         </div>
 
-        {/* PESTAÑAS CON RESALTADO VIOLETA */}
-        <nav className="flex space-x-1 border-b border-purple-100 overflow-x-auto pb-px">
-          <Link 
-            href={`/pacientes/${paciente.id}`} 
-            className="px-4 py-2.5 text-sm font-semibold border-b-2 border-violet-600 text-violet-700 whitespace-nowrap"
-          >
-            Resumen Clínico
-          </Link>
-          <Link 
-            href={`/pacientes/${paciente.id}/historia`} 
-            className="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:border-violet-300 whitespace-nowrap transition-colors"
-          >
-            Historia Clínica
-          </Link>
-          <Link 
-            href={`/pacientes/${paciente.id}/consultas`} 
-            className="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:border-violet-300 whitespace-nowrap transition-colors"
-          >
-            Consultas ({paciente._count.consultas})
-          </Link>
-          <Link 
-            href={`/pacientes/${paciente.id}/archivos`} 
-            className="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-violet-700 hover:border-violet-300 whitespace-nowrap transition-colors"
-          >
-            Archivos ({paciente._count.archivos})
-          </Link>
-        </nav>
+        {/* Pestañas de navegación */}
+        <ExpedienteTabs 
+          pacienteId={paciente.id}
+          totalConsultas={paciente._count.consultas}
+          totalArchivos={paciente._count.archivos}
+        />
 
         <main>
           {children}

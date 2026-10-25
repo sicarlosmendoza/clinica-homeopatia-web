@@ -45,7 +45,7 @@ model Paciente {
   // RELACIONES (Un paciente tiene 1 historia, MUCHAS consultas y MUCHOS archivos)
   historia_clinica   HistoriaClinica?
   consultas          Consulta[]
-  archivos           ArchivoAdjunto[]
+  archivos           Archivo[]
 
   @@map("pacientes")
 }
@@ -96,7 +96,6 @@ model Consulta {
   id                 String   @id @default(uuid()) @db.Uuid
   paciente_id        String   @db.Uuid
   paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
-
   fecha_consulta     DateTime @default(now()) @db.Timestamp()
   motivo_consulta    String   @db.Text
 
@@ -122,21 +121,25 @@ model Consulta {
   potencia_dosis      String? @db.VarChar(255) // ej. 30 CH, 10 gotas c/8h
   indicaciones        String? @db.Text
 
+  archivos Archivo[]
+
   @@map("consultas")
 }
 
-// ------------------------------------------------------------------
-// 5. MODELO: ARCHIVOS ADJUNTOS (Fotos y Docs - N por paciente)
-// ------------------------------------------------------------------
-model ArchivoAdjunto {
-  id                 String   @id @default(uuid()) @db.Uuid
-  paciente_id        String   @db.Uuid
-  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+model Archivo {
+  id               String    @id @default(uuid()) @db.Uuid
+  paciente_id      String    @db.Uuid
+  paciente         Paciente  @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  
+  consulta_id      String?   @db.Uuid
+  consulta         Consulta? @relation(fields: [consulta_id], references: [id], onDelete: SetNull)
 
-  url_archivo        String   @db.Text  // Aquí vivirá el enlace a la foto en la nube
-  tipo_archivo       String?  @db.VarChar(50) // 'imagen', 'pdf'
-  descripcion        String?  @db.Text // "Foto de la alergia", "Estudios de sangre"
-  fecha_subida       DateTime @default(now()) @db.Timestamp()
+  nombre           String    @db.VarChar(255)
+  descripcion      String?   @db.Text
+  url              String    @db.Text
+  tipo             String    @db.VarChar(50)
+  origen           String    @default("HISTORIA_INICIAL")
+  creado_en        DateTime  @default(now())
 
-  @@map("archivos_adjuntos")
+  @@index([paciente_id])
 }

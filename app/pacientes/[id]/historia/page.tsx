@@ -5,6 +5,8 @@ import { obtenerExpedientePaciente, guardarHistoriaClinica } from "../../../acti
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { obtenerArchivosIniciales } from "@/app/actions/archivos.actions";
+import SeccionDocumentosIniciales from "@/components/ui/SeccionDocumentosIniciales";
 
 export const instant = false;
 
@@ -22,6 +24,8 @@ const TextArea = ({ id, name, defaultValue, placeholder }: any) => (
 export default async function HistoriaClinicaPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const id = resolvedParams.id;
+
+  const archivosIniciales = await obtenerArchivosIniciales(resolvedParams.id);
   
   const paciente = await obtenerExpedientePaciente(id);
   if (!paciente) return null;
@@ -143,6 +147,10 @@ export default async function HistoriaClinicaPage({ params }: { params: Promise<
         </div>
 
       </form>
+      <SeccionDocumentosIniciales 
+        pacienteId={resolvedParams.id} 
+        archivosIniciales={archivosIniciales} 
+      />
     </div>
   );
 }

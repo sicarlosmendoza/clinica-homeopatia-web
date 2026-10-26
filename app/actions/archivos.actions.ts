@@ -66,9 +66,7 @@ export async function eliminarArchivo(archivoId: string, urlBlob: string, pacien
     
     revalidatePath(`/pacientes/${pacienteId}/historia`);
     revalidatePath(`/pacientes/${pacienteId}/archivos`);
-    return { success: true };
   } catch (error) {
     console.error("Error al eliminar archivo:", error);
-    return { success: false };
   }
 }

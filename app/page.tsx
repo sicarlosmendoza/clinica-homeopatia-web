@@ -60,7 +60,7 @@ export default function HomePage() {
         <form
           action={async () => {
             "use server";
-            await signIn("google");
+            await signIn("google", { redirectTo: "/pacientes" });
           }}
           className="space-y-4"
         >

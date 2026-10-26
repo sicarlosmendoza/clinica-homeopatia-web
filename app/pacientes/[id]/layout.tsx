@@ -58,15 +58,15 @@ export default async function ExpedienteLayout({
     <div className="space-y-4">
       {/* Botón regresar */}
       <div>
-        <Link href="/pacientes">
+        <a href="/pacientes">
           <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-900 hover:bg-violet-50 -ml-2">
             ← Volver a Pacientes
           </Button>
-        </Link>
+        </a>
       </div>
 
       <div className="space-y-6">
-        {/* Cabecera del Paciente (Sin botón de editar datos) */}
+        {/* Cabecera del Paciente */}
         <div className="bg-white rounded-2xl border border-purple-100 shadow-sm p-6 flex flex-col md:flex-row gap-6 items-start md:items-center relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 via-indigo-500 to-pink-500" />
           
@@ -94,6 +94,16 @@ export default async function ExpedienteLayout({
               <p>📱 {paciente.telefono || "Sin teléfono"}</p>
               <p>✉️ {paciente.correo_electronico || "Sin correo"}</p>
             </div>
+          </div>
+
+          {/* SOLUCIÓN AL BOTÓN SUPERIOR: Link disfrazado de botón */}
+          <div className="mt-4 md:mt-0 flex shrink-0 border-l pl-6 border-slate-100">
+            <a 
+              href={`/pacientes/${paciente.id}/nueva-consulta`}
+              className="inline-flex items-center justify-center bg-purple-700 hover:bg-purple-800 text-white shadow-md shadow-purple-200 rounded-xl h-11 px-6 font-semibold transition-all hover:-translate-y-0.5"
+            >
+              + Iniciar Consulta
+            </a>
           </div>
         </div>
 

@@ -42,7 +42,6 @@ model Paciente {
   correo_electronico String?  @db.VarChar(100)
   fecha_registro     DateTime @default(now()) @db.Timestamp()
 
-  // RELACIONES (Un paciente tiene 1 historia, MUCHAS consultas y MUCHOS archivos)
   historia_clinica   HistoriaClinica?
   consultas          Consulta[]
   archivos           Archivo[]
@@ -54,37 +53,34 @@ model Paciente {
 // 3. MODELO: HISTORIA CLÍNICA (Apertura - 1 por paciente)
 // ------------------------------------------------------------------
 model HistoriaClinica {
-  id                 String   @id @default(uuid()) @db.Uuid
-  paciente_id        String   @unique @db.Uuid
-  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  id                       String   @id @default(uuid()) @db.Uuid
+  paciente_id              String   @unique @db.Uuid
+  paciente                 Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
 
-  // Antecedentes Universales
-  ahf                String?  @db.Text // Antecedentes Heredofamiliares
-  apnp               String?  @db.Text // Antecedentes Personales No Patológicos
-  app                String?  @db.Text // Antecedentes Personales Patológicos
-  diagnostico_psiquiatrico String?  @db.Text // NUEVO
-  enfermedades_venereas    String?  @db.Text // NUEVO
+  ahf                      String?  @db.Text 
+  apnp                     String?  @db.Text 
+  app                      String?  @db.Text 
+  diagnostico_psiquiatrico String?  @db.Text 
+  enfermedades_venereas    String?  @db.Text 
 
-  // Antecedentes Gineco-obstétricos (Mujeres)
-  menarca            Int?     // Edad de inicio (ej. 12)
-  ritmo_menstrual    String?  @db.VarChar(100) // ej. 28x5
-  fum                DateTime? @db.Date // Fecha de última menstruación
-  gestas             Int?     @default(0)
-  partos             Int?     @default(0)
-  cesareas           Int?     @default(0)
-  abortos            Int?     @default(0)
-  metodo_anticonceptivo String? @db.VarChar(150)
+  menarca                  Int?     
+  ritmo_menstrual          String?  @db.VarChar(100) 
+  fum                      DateTime? @db.Date 
+  gestas                   Int?     @default(0)
+  partos                   Int?     @default(0)
+  cesareas                 Int?     @default(0)
+  abortos                  Int?     @default(0)
+  metodo_anticonceptivo    String?  @db.VarChar(150)
 
-  // Antecedentes Pediátricos / Perinatales
-  tipo_nacimiento    String?  @db.VarChar(100) // Eutócico, Cesárea
-  apgar              String?  @db.VarChar(50)
-  peso_nacer         Decimal? @db.Decimal(5, 2) // en kg
-  talla_nacer        Decimal? @db.Decimal(5, 2) // en cm
-  lactancia          String?  @db.VarChar(150)
-  desarrollo_psicomotor String? @db.Text
-  vacunas            String?  @db.Text
+  tipo_nacimiento          String?  @db.VarChar(100) 
+  apgar                    String?  @db.VarChar(50)
+  peso_nacer               Decimal? @db.Decimal(5, 2) 
+  talla_nacer              Decimal? @db.Decimal(5, 2) 
+  lactancia                String?  @db.VarChar(150)
+  desarrollo_psicomotor    String?  @db.Text
+  vacunas                  String?  @db.Text
 
-  fecha_actualizacion DateTime @updatedAt @db.Timestamp()
+  fecha_actualizacion      DateTime @updatedAt @db.Timestamp()
 
   @@map("historias_clinicas")
 }
@@ -93,53 +89,82 @@ model HistoriaClinica {
 // 4. MODELO: CONSULTAS (El día a día - N por paciente)
 // ------------------------------------------------------------------
 model Consulta {
-  id                 String   @id @default(uuid()) @db.Uuid
-  paciente_id        String   @db.Uuid
-  paciente           Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
-  fecha_consulta     DateTime @default(now()) @db.Timestamp()
-  motivo_consulta    String   @db.Text
+  id                    String   @id @default(uuid()) @db.Uuid
+  paciente_id           String   @db.Uuid
+  
+  folio_consulta        String   @unique @db.VarChar(50) 
+  numero_consulta       Int      @default(1)
+  fecha_consulta        DateTime @default(now()) @db.Timestamp()
+  origen                String   @default("PRESENCIAL") @db.VarChar(50)
+  
+  peso                  Decimal? @db.Decimal(5,2) 
+  talla                 Decimal? @db.Decimal(5,2) 
+  presion_arterial      String?  @db.VarChar(20)  
+  frecuencia_cardiaca   Int?     
+  frecuencia_resp       Int?     
+  temperatura           Decimal? @db.Decimal(4,2) 
+  saturacion_oxigeno    Int?     
 
-  // Signos Vitales y Somatometría
-  peso               Decimal? @db.Decimal(5, 2) // kg
-  talla              Decimal? @db.Decimal(5, 2) // cm o m
-  presion_arterial   String?  @db.VarChar(20)   // ej. 120/80
-  frecuencia_cardiaca Int?
-  frecuencia_respiratoria Int?
-  temperatura        Decimal? @db.Decimal(4, 2) // ej. 36.5
+  motivo_consulta       String   @db.Text
+  desde_cuando          String?  @db.VarChar(255)
+  caso_clinico          String?  @db.Text 
+  sintomas_mentales     String?  @db.Text
+  sintomas_generales    String?  @db.Text
+  sintomas_particulares String?  @db.Text
+  
+  tipo_paciente         String?  @db.VarChar(100)
+  miasma_predisponente  String?  @db.VarChar(100)
+  miasma_secundario     String?  @db.VarChar(100)
+  tipo_caso             String?  @db.VarChar(100)
+  nivel_salud           String?  @db.VarChar(100)
+  
+  intencion             String?  @db.VarChar(255)
+  sugerencias           String?  @db.Text
+  
+  creado_en             DateTime @default(now()) @db.Timestamp()
+  actualizado_en        DateTime @updatedAt
 
-  // Interrogatorio Homeopático
-  modalidades        String?  @db.Text // Agravaciones y mejorías
-  lateralidad        String?  @db.VarChar(100) // Izquierda, Derecha, Cruzada
-  deseos_aversiones  String?  @db.Text // Alimenticios
-  sensibilidad_termica String? @db.VarChar(100) // Caluroso, Friolento
-  sed                String?  @db.Text // Mucha, Poca, Agua fría, etc.
-  sintomas_mentales  String?  @db.Text // Miedos, ansiedad, llanto
-
-  // Resolución y Receta
-  diagnostico_clinico String? @db.Text
-  remedio_homeopatico String? @db.VarChar(255) // ej. Nux Vomica
-  potencia_dosis      String? @db.VarChar(255) // ej. 30 CH, 10 gotas c/8h
-  indicaciones        String? @db.Text
-
-  archivos Archivo[]
+  paciente              Paciente      @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  archivos              Archivo[] 
+  tratamientos          Tratamiento[] // <--- AQUÍ ESTÁ LA MAGIA
 
   @@map("consultas")
 }
 
-model Archivo {
-  id               String    @id @default(uuid()) @db.Uuid
-  paciente_id      String    @db.Uuid
-  paciente         Paciente  @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
-  
-  consulta_id      String?   @db.Uuid
-  consulta         Consulta? @relation(fields: [consulta_id], references: [id], onDelete: SetNull)
+// ------------------------------------------------------------------
+// 5. NUEVA TABLA PARA RECETAS MÚLTIPLES
+// ------------------------------------------------------------------
+model Tratamiento {
+  id                String   @id @default(uuid()) @db.Uuid
+  consulta_id       String   @db.Uuid
+  medicamento       String   @db.VarChar(255)
+  escala_potencia   String?  @db.VarChar(100)
+  cantidad_sucusion String?  @db.VarChar(100)
+  frecuencia        String?  @db.VarChar(100)
+  duracion          String?  @db.VarChar(100)
 
-  nombre           String    @db.VarChar(255)
-  descripcion      String?   @db.Text
-  url              String    @db.Text
-  tipo             String    @db.VarChar(50)
-  origen           String    @default("HISTORIA_INICIAL")
-  creado_en        DateTime  @default(now())
+  consulta          Consulta @relation(fields: [consulta_id], references: [id], onDelete: Cascade)
+
+  @@map("tratamientos")
+}
+
+// ------------------------------------------------------------------
+// 6. MODELO DE ARCHIVOS ADJUNTOS
+// ------------------------------------------------------------------
+model Archivo {
+  id          String    @id @default(uuid()) @db.Uuid
+  paciente_id String    @db.Uuid
+  paciente    Paciente  @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  
+  consulta_id String?   @db.Uuid
+  consulta    Consulta? @relation(fields: [consulta_id], references: [id], onDelete: SetNull)
+
+  nombre      String    @db.VarChar(255)
+  descripcion String?   @db.Text
+  url         String    @db.Text
+  tipo        String    @db.VarChar(50)
+  origen      String    @default("HISTORIA_INICIAL")
+  creado_en   DateTime  @default(now())
 
   @@index([paciente_id])
 }

@@ -13,6 +13,14 @@ export default async function PacientesPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="space-y-6">
+      
+      {/* BOTÓN DE REGRESO AL DASHBOARD */}
+      <div>
+        <Link href="/dashboard" className="text-sm font-bold text-slate-500 hover:text-slate-800">
+          ← Regresar al Dashboard
+        </Link>
+      </div>
+
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Directorio de Pacientes</h1>
@@ -66,7 +74,7 @@ export default async function PacientesPage({ searchParams }: { searchParams: Pr
                   </Link>
                   <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50">🗑️ Eliminar</Button>
                   
-                  {/* AQUÍ CONECTAMOS EL BOTÓN AL NUEVO DASHBOARD */}
+                  {/* Botón para ver el expediente (se mantiene igual) */}
                   <Link href={`/pacientes/${paciente.id}`}>
                     <Button size="sm" className="bg-slate-900 hidden sm:inline-flex">Ver Expediente</Button>
                   </Link>

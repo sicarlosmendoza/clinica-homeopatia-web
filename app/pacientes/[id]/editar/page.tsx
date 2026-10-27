@@ -3,6 +3,8 @@ import FormularioEditarPaciente from "./FormularioEditarPaciente";
 
 export const instant = false;
 
+
+
 export default async function EditarPacientePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
   const pacienteId = resolvedParams.id;
@@ -17,6 +19,7 @@ export default async function EditarPacientePage({ params }: { params: Promise<{
   }
 
   return (
+    
     <div className="pb-12 mt-4 animate-in fade-in duration-300">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-slate-800">Datos Generales</h2>

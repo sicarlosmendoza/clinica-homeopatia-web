@@ -32,7 +32,7 @@ model Paciente {
   folio              String   @unique @db.VarChar(20)
   nombre_completo    String   @db.VarChar(255)
   fecha_nacimiento   DateTime @db.Date
-  sexo               String   @db.VarChar(20)
+  sexo               String?  @db.VarChar(20)
   foto               String?  @db.Text
   genero             String?  @db.VarChar(50)
   escolaridad        String?  @db.VarChar(100)
@@ -45,6 +45,8 @@ model Paciente {
   historia_clinica   HistoriaClinica?
   consultas          Consulta[]
   archivos           Archivo[]
+  citas              Cita[]
+  
 
   @@map("pacientes")
 }
@@ -57,12 +59,17 @@ model HistoriaClinica {
   paciente_id              String   @unique @db.Uuid
   paciente                 Paciente @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
 
-  ahf                      String?  @db.Text 
-  apnp                     String?  @db.Text 
-  app                      String?  @db.Text 
+  // 3.1 BLOQUE UNIVERSAL
+  ahf                      String?  @db.Text // Antecedentes Heredofamiliares
+  apnp                     String?  @db.Text // Antecedentes Personales No Patológicos
+  app                      String?  @db.Text // Antecedentes Personales Patológicos
   diagnostico_psiquiatrico String?  @db.Text 
   enfermedades_venereas    String?  @db.Text 
+  sensibilidad_termica     String?  @db.VarChar(100) // Friolento, Caluroso
+  sed                      String?  @db.VarChar(150)
+  deseos_aversiones        String?  @db.Text
 
+  // 3.2 BLOQUE GINECO-OBSTÉTRICO (Mujeres)
   menarca                  Int?     
   ritmo_menstrual          String?  @db.VarChar(100) 
   fum                      DateTime? @db.Date 
@@ -72,6 +79,7 @@ model HistoriaClinica {
   abortos                  Int?     @default(0)
   metodo_anticonceptivo    String?  @db.VarChar(150)
 
+  // 3.3 BLOQUE PERINATAL Y LACTANCIA (0 a 23 meses)
   tipo_nacimiento          String?  @db.VarChar(100) 
   apgar                    String?  @db.VarChar(50)
   peso_nacer               Decimal? @db.Decimal(5, 2) 
@@ -79,6 +87,24 @@ model HistoriaClinica {
   lactancia                String?  @db.VarChar(150)
   desarrollo_psicomotor    String?  @db.Text
   vacunas                  String?  @db.Text
+
+  // 3.4 BLOQUE INFANTIL / ESCOLAR (2 a 11 años)
+  edad_caminar             String?  @db.VarChar(50)
+  desarrollo_lenguaje      String?  @db.VarChar(150)
+  control_esfinteres       String?  @db.VarChar(150)
+  patron_sueno             String?  @db.Text
+  comportamiento           String?  @db.Text
+  miedos_especificos       String?  @db.Text
+  rendimiento_escolar      String?  @db.Text
+
+  // 3.5 BLOQUE HÁBITOS ADULTOS / ADOLESCENTES (+12 años)
+  tabaquismo               String?  @db.VarChar(150)
+  alcoholismo              String?  @db.VarChar(150)
+  cafeina_estimulantes     String?  @db.VarChar(150)
+  alimentacion             String?  @db.Text
+  actividad_fisica         String?  @db.VarChar(150)
+  estado_animo             String?  @db.Text
+  nivel_estres             String?  @db.VarChar(100)
 
   fecha_actualizacion      DateTime @updatedAt @db.Timestamp()
 
@@ -167,4 +193,81 @@ model Archivo {
   creado_en   DateTime  @default(now())
 
   @@index([paciente_id])
+}
+
+// ==========================================
+// MÓDULO DE AGENDA Y CITAS (FASE 3)
+// ==========================================
+
+model Sede {
+  id              String    @id @default(uuid()) @db.Uuid
+  nombre          String
+  direccion       String?
+  telefono        String?
+  color           String?
+  
+  // --- NUEVOS CAMPOS PÚBLICOS ---
+  descripcion     String?   @db.Text
+  imagen_url      String?   // URL de Vercel Blob para la foto de la fachada/consultorio
+  link_maps       String?   // URL de Google Maps
+  
+  activo          Boolean   @default(true)
+  
+  citas           Cita[]
+  horarios_medico HorarioMedico[]
+}
+
+// NUEVO: Catálogo de Médicos (Permite escalar a más doctores en el futuro)
+model Medico {
+  id              String    @id @default(uuid()) @db.Uuid
+  nombre          String    // Ej: "Dra. Arizai"
+  especialidad    String?   @default("Médico Homeópata")
+  activo          Boolean   @default(true)
+  
+  horarios        HorarioMedico[]
+  citas           Cita[]
+}
+
+// NUEVO: Horarios cruzados (Evita que un médico esté en dos sedes al mismo tiempo)
+model HorarioMedico {
+  id              String    @id @default(uuid()) @db.Uuid
+  
+  medico_id       String    @db.Uuid
+  medico          Medico    @relation(fields: [medico_id], references: [id])
+  
+  sede_id         String    @db.Uuid
+  sede            Sede      @relation(fields: [sede_id], references: [id])
+  
+  dia_semana      Int       // 1 = Lunes, 2 = Martes, 3 = Miércoles... 7 = Domingo
+  hora_inicio     String    // Ej: "09:00"
+  hora_fin        String    // Ej: "14:00"
+  
+  activo          Boolean   @default(true)
+}
+
+model Cita {
+  id              String    @id @default(uuid()) @db.Uuid
+  
+  // Relaciones
+  sede_id         String    @db.Uuid
+  sede            Sede      @relation(fields: [sede_id], references: [id])
+  
+  medico_id       String?   @db.Uuid  // NUEVO: Saber qué doctor atiende la cita
+  medico          Medico?   @relation(fields: [medico_id], references: [id])
+  
+  paciente_id     String?   @db.Uuid
+  paciente        Paciente? @relation(fields: [paciente_id], references: [id])
+  
+  // Datos del paciente
+  nombre_paciente String    
+  telefono        String?
+  correo          String?
+  
+  // Datos de la cita
+  fecha_cita      DateTime  
+  motivo          String?   
+  estado          String    @default("PENDIENTE") 
+  
+  creado_en       DateTime  @default(now())
+  actualizado_en  DateTime  @updatedAt
 }

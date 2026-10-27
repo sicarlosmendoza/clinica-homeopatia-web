@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import CapturaFotoModal from "@/components/ui/CapturaFotoModal";
 import ExpedienteTabs from "@/components/ui/ExpedienteTabs";
+import BotonIniciarConsultaHeader from "./BotonIniciarConsultaHeader";
 
 export const instant = false;
 
@@ -58,11 +59,11 @@ export default async function ExpedienteLayout({
     <div className="space-y-4">
       {/* Botón regresar */}
       <div>
-        <a href="/pacientes">
+        <Link href="/pacientes">
           <Button variant="ghost" size="sm" className="text-violet-600 hover:text-violet-900 hover:bg-violet-50 -ml-2">
             ← Volver a Pacientes
           </Button>
-        </a>
+        </Link>
       </div>
 
       <div className="space-y-6">
@@ -96,15 +97,8 @@ export default async function ExpedienteLayout({
             </div>
           </div>
 
-          {/* SOLUCIÓN AL BOTÓN SUPERIOR: Link disfrazado de botón */}
-          <div className="mt-4 md:mt-0 flex shrink-0 border-l pl-6 border-slate-100">
-            <a 
-              href={`/pacientes/${paciente.id}/nueva-consulta`}
-              className="inline-flex items-center justify-center bg-purple-700 hover:bg-purple-800 text-white shadow-md shadow-purple-200 rounded-xl h-11 px-6 font-semibold transition-all hover:-translate-y-0.5"
-            >
-              + Iniciar Consulta
-            </a>
-          </div>
+          {/* Botón inteligente en cabecera */}
+          <BotonIniciarConsultaHeader pacienteId={paciente.id} />
         </div>
 
         {/* Pestañas de navegación */}

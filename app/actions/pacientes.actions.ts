@@ -6,7 +6,8 @@ import { revalidatePath } from "next/cache";
 export async function crearPaciente(formData: FormData) {
   const nombre_completo = formData.get("nombre_completo") as string;
   const fecha_nacimiento_str = formData.get("fecha_nacimiento") as string;
-  const sexo = formData.get("sexo") as string;
+  const sexo = (formData.get("sexo") as string) || null;
+  const estado_civil = (formData.get("estado_civil") as string) || null;
   const escolaridad = (formData.get("escolaridad") as string) || null;
   const ocupacion = (formData.get("ocupacion") as string) || null;
   const telefono = (formData.get("telefono") as string) || null;
@@ -30,16 +31,16 @@ export async function crearPaciente(formData: FormData) {
         nuevoNumero = numeroAnterior + 1;
       }
     }
-    // Rellena con ceros a la izquierda, ej: "005"
     const nuevoFolio = `PAC-${nuevoNumero.toString().padStart(3, '0')}`;
 
-    // 2. Guardar en la base de datos con el nuevo folio generado
+    // 2. Guardar en la base de datos con estado_civil incluido
     await prisma.paciente.create({
       data: { 
         folio: nuevoFolio,
         nombre_completo, 
         fecha_nacimiento: new Date(fecha_nacimiento_str), 
         sexo, 
+        estado_civil,
         escolaridad,
         ocupacion, 
         telefono, 
@@ -55,10 +56,8 @@ export async function crearPaciente(formData: FormData) {
   }
 }
 
-// NUEVO: Ahora recibe un parámetro de búsqueda (query)
 export async function obtenerPacientes(query?: string) {
   try {
-    // Si hay texto, busca en nombre OR correo OR teléfono
     const whereClause = query ? {
       OR: [
         { nombre_completo: { contains: query, mode: "insensitive" as const } },
@@ -76,7 +75,6 @@ export async function obtenerPacientes(query?: string) {
   }
 }
 
-// NUEVO: Obtener un solo paciente por su ID
 export async function obtenerPacientePorId(id: string) {
   try {
     return await prisma.paciente.findUnique({
@@ -91,17 +89,29 @@ export async function obtenerPacientePorId(id: string) {
   }
 }
 
-// NUEVO: Actualizar paciente existente
-export async function actualizarPaciente(id: string, formData: FormData) {
+// Actualizar paciente existente (acepta ID directo o desde el FormData)
+export async function actualizarPaciente(idOFormData: string | FormData, posibleFormData?: FormData) {
+  let id: string;
+  let formData: FormData;
+
+  if (typeof idOFormData === "string") {
+    id = idOFormData;
+    formData = posibleFormData as FormData;
+  } else {
+    formData = idOFormData;
+    id = formData.get("id") as string;
+  }
+
   const nombre_completo = formData.get("nombre_completo") as string;
   const fecha_nacimiento_str = formData.get("fecha_nacimiento") as string;
-  const sexo = formData.get("sexo") as string;
+  const sexo = (formData.get("sexo") as string) || null;
+  const estado_civil = (formData.get("estado_civil") as string) || null;
   const escolaridad = (formData.get("escolaridad") as string) || null;
   const ocupacion = (formData.get("ocupacion") as string) || null;
   const telefono = (formData.get("telefono") as string) || null;
   const correo_electronico = (formData.get("correo_electronico") as string) || null;
 
-  if (!nombre_completo || !fecha_nacimiento_str || !sexo) {
+  if (!id || !nombre_completo || !fecha_nacimiento_str) {
     return { success: false, error: "Campos obligatorios incompletos" };
   }
 
@@ -112,6 +122,7 @@ export async function actualizarPaciente(id: string, formData: FormData) {
         nombre_completo,
         fecha_nacimiento: new Date(fecha_nacimiento_str),
         sexo,
+        estado_civil,
         escolaridad,
         ocupacion,
         telefono,
@@ -119,7 +130,10 @@ export async function actualizarPaciente(id: string, formData: FormData) {
       },
     });
     
+    // Revalidación completa de rutas para limpiar la caché de Next.js
     revalidatePath("/pacientes");
+    revalidatePath(`/pacientes/${id}`);
+    revalidatePath(`/pacientes/${id}/editar`);
     return { success: true };
   } catch (error) {
     console.error("Error al actualizar:", error);
@@ -127,7 +141,6 @@ export async function actualizarPaciente(id: string, formData: FormData) {
   }
 }
 
-// NUEVO: Obtener paciente con sus relaciones para el Dashboard
 export async function obtenerExpedientePaciente(id: string) {
   try {
     return await prisma.paciente.findUnique({
@@ -154,10 +167,8 @@ export async function obtenerExpedientePaciente(id: string) {
   }
 }
 
-// NUEVO: Guardar o actualizar la Historia Clínica
 export async function guardarHistoriaClinica(pacienteId: string, formData: FormData) {
   try {
-    // 1. Extraer y formatear los datos del formulario
     const datosFormulario = {
       ahf: (formData.get("ahf") as string) || null,
       apnp: (formData.get("apnp") as string) || null,
@@ -165,8 +176,6 @@ export async function guardarHistoriaClinica(pacienteId: string, formData: FormD
       diagnostico_psiquiatrico: (formData.get("diagnostico_psiquiatrico") as string) || null, 
       enfermedades_venereas: (formData.get("enfermedades_venereas") as string) || null,       
 
-      
-      // Datos Gineco-obstétricos (pueden venir vacíos si es hombre o niña)
       menarca: formData.get("menarca") ? parseInt(formData.get("menarca") as string) : null,
       ritmo_menstrual: (formData.get("ritmo_menstrual") as string) || null,
       fum: formData.get("fum") ? new Date(formData.get("fum") as string) : null,
@@ -176,7 +185,6 @@ export async function guardarHistoriaClinica(pacienteId: string, formData: FormD
       abortos: formData.get("abortos") ? parseInt(formData.get("abortos") as string) : 0,
       metodo_anticonceptivo: (formData.get("metodo_anticonceptivo") as string) || null,
 
-      // Datos Pediátricos
       tipo_nacimiento: (formData.get("tipo_nacimiento") as string) || null,
       apgar: (formData.get("apgar") as string) || null,
       peso_nacer: formData.get("peso_nacer") ? parseFloat(formData.get("peso_nacer") as string) : null,
@@ -186,7 +194,6 @@ export async function guardarHistoriaClinica(pacienteId: string, formData: FormD
       vacunas: (formData.get("vacunas") as string) || null,
     };
 
-    // 2. Guardar en Base de Datos (Upsert = Update o Insert)
     await prisma.historiaClinica.upsert({
       where: { paciente_id: pacienteId },
       update: datosFormulario,

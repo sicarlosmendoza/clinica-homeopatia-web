@@ -151,8 +151,10 @@ model Consulta {
   actualizado_en        DateTime @updatedAt
 
   paciente              Paciente      @relation(fields: [paciente_id], references: [id], onDelete: Cascade)
+  medico_id             String?       @db.Uuid
+  medico                Medico?       @relation(fields: [medico_id], references: [id])
   archivos              Archivo[] 
-  tratamientos          Tratamiento[] // <--- AQUÍ ESTÁ LA MAGIA
+  tratamientos          Tratamiento[]
 
   @@map("consultas")
 }
@@ -223,9 +225,10 @@ model Medico {
   nombre          String    // Ej: "Dra. Arizai"
   especialidad    String?   @default("Médico Homeópata")
   activo          Boolean   @default(true)
-  
+  cedula          String?  @db.VarChar(50)
   horarios        HorarioMedico[]
   citas           Cita[]
+  consultas       Consulta[]
 }
 
 // NUEVO: Horarios cruzados (Evita que un médico esté en dos sedes al mismo tiempo)

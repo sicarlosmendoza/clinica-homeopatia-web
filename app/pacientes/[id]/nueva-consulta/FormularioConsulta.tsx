@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { guardarNuevaConsulta } from "@/app/actions/consultas.actions";
 
-export default function FormularioConsulta({ pacienteId, tallaPrevia }: { pacienteId: string; tallaPrevia: string | number }) {
+export default function FormularioConsulta({ 
+  pacienteId, 
+  tallaPrevia, 
+  medicos // <--- ¡AQUÍ ESTÁ LA CORRECCIÓN!
+}: { 
+  pacienteId: string; 
+  tallaPrevia: string | number;
+  medicos?: any[]; // <--- TIPADO CORREGIDO AQUÍ
+}) {
   const guardarConsultaConId = guardarNuevaConsulta.bind(null, pacienteId);
 
   const [tratamientos, setTratamientos] = useState([
@@ -26,8 +34,28 @@ export default function FormularioConsulta({ pacienteId, tallaPrevia }: { pacien
   };
 
   return (
-    <form action={guardarConsultaConId} className="space-y-8">
-      
+    <form action={guardarConsultaConId} className="space-y-8 animate-in fade-in">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+        <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          🩺 Médico Tratante
+        </h3>
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            ¿Quién atiende esta consulta?
+          </label>
+          <select 
+            name="medico_id" 
+            className="w-full md:w-1/2 p-3 border rounded-xl bg-slate-50 font-semibold text-slate-800"
+            required
+          >
+            {medicos?.map((medico) => (
+              <option key={medico.id} value={medico.id}>
+                {medico.nombre} - {medico.especialidad}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <input type="hidden" name="tratamientos_json" value={JSON.stringify(tratamientos)} />
 
       {/* BLOQUE 1: ORIGEN */}

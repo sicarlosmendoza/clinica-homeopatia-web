@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 interface GuardarConsultaParams {
   pacienteId: string;
   citaId?: string | null;
+  medico_id?: string;
   motivo: string;
   peso?: number | null;
   talla?: number | null;
@@ -20,6 +21,9 @@ interface GuardarConsultaParams {
   frecuencia?: string;
   duracion?: string; // <-- Agregamos duración aquí
 }
+
+
+
 
 export async function guardarNuevaConsulta(datos: GuardarConsultaParams) {
   try {
@@ -47,9 +51,27 @@ export async function guardarNuevaConsulta(datos: GuardarConsultaParams) {
     });
     const numeroConsulta = totalConsultasPaciente + 1;
 
+// BUSCAMOS QUÉ MÉDICO ATENDIÓ
+    
+    let medicoAsignadoId = datos.medico_id || null;
+
+    if (!medicoAsignadoId && datos.citaId) {
+      const cita = await prisma.cita.findUnique({ where: { id: datos.citaId } });
+      if (cita && cita.medico_id) medicoAsignadoId = cita.medico_id;
+    }
+
+
+    // Si no había cita o la cita no tenía médico, asignamos el primer médico activo por defecto
+    if (!medicoAsignadoId) {
+      const medicoDefault = await prisma.medico.findFirst({ where: { activo: true } });
+      if (medicoDefault) medicoAsignadoId = medicoDefault.id;
+    }
+
+
     const consulta = await prisma.consulta.create({
       data: {
         folio_consulta: nuevoFolio,
+        medico_id: medicoAsignadoId,
         numero_consulta: numeroConsulta,
         paciente_id: datos.pacienteId,
         origen: datos.citaId ? "WEB" : "PRESENCIAL",

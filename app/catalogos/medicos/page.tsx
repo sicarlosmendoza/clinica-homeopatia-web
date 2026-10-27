@@ -36,6 +36,11 @@ export default async function CatalogoMedicosPage() {
               <label className="block text-sm font-medium text-slate-700 mb-1">Nombre y Título *</label>
               <input type="text" name="nombre" required placeholder="Ej. Dra. Arizai..." className="w-full p-2.5 border rounded-xl" />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Cédula Profesional</label>
+              <input type="text" name="cedula" placeholder="Ej. 1234567" className="w-full p-2.5 border rounded-xl" />
+            </div>
             
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Especialidad</label>

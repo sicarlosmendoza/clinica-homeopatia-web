@@ -136,6 +136,43 @@ export default function HistorialConsultas({ consultas }: { consultas: Consulta[
                       </div>
                     )}
                     
+                    {/* Fila 3: Receta Detallada e Impresión */}
+                  <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 mt-6 relative">
+                    
+                    {/* Botón de Imprimir Receta */}
+                    <div className="absolute top-4 right-4">
+                      <a 
+                        href={`/pacientes/${consulta.paciente_id}/consultas/${consulta.id}/receta`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-700 hover:text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2"
+                      >
+                        🖨️ Imprimir Receta
+                      </a>
+                    </div>
+
+                    <h4 className="text-xs font-black uppercase text-purple-800 mb-3 flex items-center gap-1">
+                      <span>💊</span> Receta Médica Emitida
+                    </h4>
+                    
+                    <div className="space-y-3 pr-40">
+                      {consulta.tratamientos.map((t, index) => (
+                        <div key={index} className="bg-white p-3 rounded-lg border border-purple-100 shadow-sm flex flex-col md:flex-row md:items-center gap-4">
+                          <div>
+                            <strong className="text-purple-900 block md:inline text-base">{t.medicamento}</strong>
+                            {t.escala_potencia && <span className="text-purple-700 ml-0 md:ml-2 text-sm font-semibold">{t.escala_potencia}</span>}
+                          </div>
+                          
+                          <div className="text-sm text-slate-600 flex flex-wrap items-center gap-x-3 gap-y-1">
+                            {t.cantidad_sucusion && <span><b className="text-slate-400">Dosis:</b> {t.cantidad_sucusion}</span>}
+                            {t.frecuencia && <span><b className="text-slate-400">Frec:</b> {t.frecuencia}</span>}
+                            {t.duracion && <span><b className="text-slate-400">Dur:</b> {t.duracion}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
                     <div className="space-y-4">
                       {consulta.sintomas_mentales && (
                         <div>

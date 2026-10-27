@@ -28,7 +28,7 @@ export async function guardarNuevaConsulta(pacienteId: string, formData: FormDat
       folio_consulta,
       numero_consulta,
       origen: formData.get("origen") as string,
-      
+      medico_id: formData.get("medico_id") as string,
       peso, talla,
       presion_arterial: formData.get("presion_arterial") as string,
       frecuencia_cardiaca: fc,

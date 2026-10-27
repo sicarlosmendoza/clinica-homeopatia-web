@@ -133,13 +133,28 @@ export async function obtenerTodosLosMedicos() {
 }
 
 export async function crearMedico(formData: FormData) {
-  await prisma.medico.create({
-    data: {
-      nombre: formData.get("nombre") as string,
-      especialidad: formData.get("especialidad") as string || "Médico Homeópata",
-      activo: true,
-    }
-  });
+  try {
+    const nombre = formData.get("nombre") as string;
+    const especialidad = formData.get("especialidad") as string;
+    const cedula = formData.get("cedula") as string; // <-- 1. RECIBIMOS LA CÉDULA
+
+    if (!nombre) throw new Error("El nombre es obligatorio");
+
+    await prisma.medico.create({
+      data: {
+        nombre,
+        especialidad: especialidad || "Médico Homeópata",
+        cedula: cedula || null, // <-- 2. LA GUARDAMOS EN LA BD
+      },
+    });
+    
+    revalidatePath("/catalogos/medicos");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al crear médico:", error);
+    return { success: false, error: error.message };
+  }
+}
   
   revalidatePath("/catalogos/medicos");
   return { success: true };

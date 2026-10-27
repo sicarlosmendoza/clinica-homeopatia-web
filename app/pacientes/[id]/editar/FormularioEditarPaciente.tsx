@@ -33,7 +33,8 @@ export default function FormularioEditarPaciente({ paciente }: { paciente: any }
     setGuardado(false);
 
     startTransition(async () => {
-      const res = await actualizarPaciente(paciente.id, formData);
+      // AQUÍ ESTÁ EL ARREGLO: Agregamos "as any" para que TS permita leer "res.error"
+      const res = (await actualizarPaciente(paciente.id, formData)) as any;
       
       if (res?.success) {
         setGuardado(true);

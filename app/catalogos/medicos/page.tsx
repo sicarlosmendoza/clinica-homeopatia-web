@@ -1,6 +1,6 @@
 import { obtenerTodosLosMedicos, crearMedico, alternarEstadoMedico, eliminarMedico } from "@/app/actions/agenda.actions";
 import { Button } from "@/components/ui/button";
-import Link from "next/link"; // Asegúrate de importar Link
+import Link from "next/link"; 
 
 export const instant = false;
 
@@ -28,7 +28,10 @@ export default async function CatalogoMedicosPage() {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
           <h2 className="font-bold text-slate-800 mb-4 text-lg">✚ Alta de Médico</h2>
           
-          <form action={crearMedico} className="space-y-4">
+          <form action={async (formData) => {
+            "use server";
+            await crearMedico(formData);
+          }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Nombre y Título *</label>
               <input type="text" name="nombre" required placeholder="Ej. Dra. Arizai..." className="w-full p-2.5 border rounded-xl" />
@@ -56,9 +59,6 @@ export default async function CatalogoMedicosPage() {
           )}
 
           {medicos.map((medico) => {
-            const toggleAccion = alternarEstadoMedico.bind(null, medico.id, medico.activo);
-            const eliminarAccion = eliminarMedico.bind(null, medico.id);
-            
             return (
               <div key={medico.id} className={`bg-white p-5 rounded-2xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${medico.activo ? 'border-l-4 border-l-purple-500 shadow-sm' : 'border-slate-200 opacity-60 bg-slate-50'}`}>
                 
@@ -78,12 +78,18 @@ export default async function CatalogoMedicosPage() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2">
-                  <form action={toggleAccion}>
+                  <form action={async () => {
+                    "use server";
+                    await alternarEstadoMedico(medico.id, medico.activo);
+                  }}>
                     <Button type="submit" variant="secondary" size="sm" className="h-8">
                       {medico.activo ? 'Apagar' : 'Prender'}
                     </Button>
                   </form>
-                  <form action={eliminarAccion}>
+                  <form action={async () => {
+                    "use server";
+                    await eliminarMedico(medico.id);
+                  }}>
                     <Button type="submit" variant="destructive" size="sm" className="h-8">
                       Borrar
                     </Button>

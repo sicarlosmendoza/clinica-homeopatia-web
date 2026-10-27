@@ -26,7 +26,10 @@ export default async function CatalogoSedesPage() {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm h-fit">
           <h2 className="font-bold text-slate-800 mb-4 text-lg">✚ Alta de Sede</h2>
           
-          <form action={crearSede} className="space-y-4">
+          <form action={async (formData) => {
+            "use server";
+            await crearSede(formData);
+          }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del Consultorio *</label>
               <input type="text" name="nombre" required placeholder="Ej. Clínica Zapopan" className="w-full p-2.5 border rounded-xl" />
@@ -79,9 +82,6 @@ export default async function CatalogoSedesPage() {
           <h2 className="font-bold text-slate-800 mb-4 text-lg">Catálogo Vigente ({sedes.length})</h2>
           
           {sedes.map((sede) => {
-            const toggleAccion = alternarEstadoSede.bind(null, sede.id, sede.activo);
-            const eliminarAccion = eliminarSede.bind(null, sede.id);
-            
             return (
               <div key={sede.id} className={`bg-white p-5 rounded-2xl border transition-all flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${sede.activo ? 'border-l-4 border-l-emerald-500 shadow-sm' : 'border-slate-200 opacity-60 bg-slate-50'}`}>
                 <div className="flex gap-4 items-center">
@@ -113,7 +113,10 @@ export default async function CatalogoSedesPage() {
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-2">
-                  <form action={toggleAccion}>
+                  <form action={async () => {
+                    "use server";
+                    await alternarEstadoSede(sede.id, sede.activo);
+                  }}>
                     <Button type="submit" variant="secondary" size="sm" className="h-8">
                       {sede.activo ? 'Apagar' : 'Prender'}
                     </Button>
@@ -125,7 +128,10 @@ export default async function CatalogoSedesPage() {
                     </Button>
                   </Link>
 
-                  <form action={eliminarAccion}>
+                  <form action={async () => {
+                    "use server";
+                    await eliminarSede(sede.id);
+                  }}>
                     <Button type="submit" variant="destructive" size="sm" className="h-8">
                       Borrar
                     </Button>

@@ -156,9 +156,6 @@ export async function crearMedico(formData: FormData) {
   }
 }
   
-  revalidatePath("/catalogos/medicos");
-  return { success: true };
-}
 
 export async function alternarEstadoMedico(id: string, estadoActual: boolean) {
   await prisma.medico.update({

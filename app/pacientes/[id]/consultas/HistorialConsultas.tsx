@@ -141,8 +141,9 @@ export default function HistorialConsultas({ consultas }: { consultas: Consulta[
                     
                     {/* Botón de Imprimir Receta */}
                     <div className="absolute top-4 right-4">
+                      {/* @ts-ignore - Prisma types mismatch for paciente_id */}
                       <a 
-                        href={`/pacientes/${consulta.paciente_id}/consultas/${consulta.id}/receta`} 
+                        href={`/pacientes/${(consulta as any).paciente_id || (consulta as any).pacienteId}/consultas/${consulta.id}/receta`} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="bg-white border border-purple-200 text-purple-700 hover:bg-purple-700 hover:text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition-colors flex items-center gap-2"

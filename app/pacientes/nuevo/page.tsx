@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { crearPaciente } from "../../actions/pacientes.actions";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import BotonGuardar from "./BotonGuardar";
 
 // Necesario en Next.js 16 para páginas con Server Actions que modifican datos
 export const instant = false;
@@ -104,12 +105,10 @@ export default function NuevoPacientePage() {
               <Input id="correo_electronico" name="correo_electronico" type="email" placeholder="paciente@correo.com" />
             </div>
           </div>
-
-          {/* Botón Guardar */}
+          
+          {/* Botón Guardar Protegido */}
           <div className="pt-4 border-t flex justify-end">
-            <Button type="submit" size="lg" className="bg-teal-600 hover:bg-teal-700">
-              Registrar Paciente
-            </Button>
+            <BotonGuardar />
           </div>
           
         </form>
